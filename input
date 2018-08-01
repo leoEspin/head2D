@@ -1,0 +1,5 @@
+100	//nx
+100	//ny
+1.0e-5	//dt
+1. 	//diffusion-coefficient
+1. 	//final time
