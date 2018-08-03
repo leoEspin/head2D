@@ -4,15 +4,15 @@
 #
 echo "g++ compiler and python 3 should be installed for this script to work"
 compiler=`which g++`
-plotter=`which python`
+py=`which python`
 echo "compiling for sigle processor"
 $compiler -o heat -O3 heat_equation.cpp 
 echo "define input parameters"
-$plotter gimmick.py
+$py gimmick.py
 
 echo "running ..."
 ./heat
-$plotter heatPlot.py &
+$py heatPlot.py &
 
 #
 #  Discard the executable file.
