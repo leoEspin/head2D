@@ -7,6 +7,9 @@ compiler=`which g++`
 plotter=`which python`
 echo "compiling for sigle processor"
 $compiler -o heat -O3 heat_equation.cpp 
+echo "define input parameters"
+$plotter gimmick.py
+
 echo "running ..."
 ./heat
 $plotter heatPlot.py &

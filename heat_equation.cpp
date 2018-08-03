@@ -118,10 +118,9 @@ int main(){
 
 void getInput(int& nx,int& ny,double& dt,double& c,double& tfinal){
   ifstream file;
-  string caca;
   file.open("input");
-  file >> nx >> caca >> ny >> caca >> dt
-       >> caca >> c >> caca >> tfinal;
+  file >> nx >> ny >> dt
+       >> c >> tfinal;
   file.close();
 }
 void storeOutput(double** sol,double time, int indx,int indy){
