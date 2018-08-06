@@ -65,7 +65,7 @@ int main(){
   initialCond(h,tot_x,tot_y,1.);
   initialCond(hf,tot_x,tot_y,0.);
   while(t < tfinal){//solving system only for interior points
-# pragma omp parallel default(shared) private(i,j) num_threads(4)
+# pragma omp parallel default(shared) private(i,j)
     {  //memory allocated for each thread
       double* rhsx = new double [tot_x -2];//linear system only for interior points
       double* rhsy = new double [tot_y -2];
