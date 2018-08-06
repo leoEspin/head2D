@@ -31,6 +31,7 @@
 #include <iostream>
 #include <string>
 #include <cmath> //used for sqrt in frobenius
+#include <omp.h>
 using namespace std;
 
 void getInput(int& nx,int& ny,double& dt,double& c,double& tfinal);
@@ -63,38 +64,44 @@ int main(){
   hf= initialize(tot_x,tot_y);
   initialCond(h,tot_x,tot_y,1.);
   initialCond(hf,tot_x,tot_y,0.);
-  double* rhsx = new double [tot_x -2];//linear system only for interior points
-  double* rhsy = new double [tot_y -2];
   while(t < tfinal){//solving system only for interior points
-#pragma omp parallel for default(shared) private(rhsx) num_threads(4)
-    for(j=1;j< tot_y -1;j++){
-      for(i=1;i< tot_x -1;i++){ //j fixed. solve system in x direction
-	rhsx[i-1]=-ay*h[i][j+1]+2.*(1./dt + ay)*h[i][j] -ay*h[i][j-1]; //rhsx index shifted by -1
+# pragma omp parallel default(shared) private(i,j) num_threads(4)
+    {  //memory allocated for each thread
+      double* rhsx = new double [tot_x -2];//linear system only for interior points
+      double* rhsy = new double [tot_y -2];
+# pragma omp for 
+      for(j=1;j< tot_y -1;j++){
+	for(i=1;i< tot_x -1;i++){ //j fixed. solve system in x direction
+	  rhsx[i-1]=-ay*h[i][j+1]+2.*(1./dt + ay)*h[i][j] -ay*h[i][j-1]; //rhsx index shifted by -1
+	}
+	rhsx[tot_x -3]=rhsx[tot_x -3]-ax;//size of rhsx is tot_x -2!!
+	thomas(tot_x -2,ax,bx,cx,rhsx);
+	for(i=1;i< tot_x -1;i++){ //j fixed.
+	  hf[i][j]=rhsx[i-1];     //rhsx index shifted by -1
+	}
+	hf[0][j]=0.;
+	hf[tot_x -1][j]=1.;
       }
-      rhsx[tot_x -3]=rhsx[tot_x -3]-ax;//size of rhsx is tot_x -2!!
-      thomas(tot_x -2,ax,bx,cx,rhsx);
-      for(i=1;i< tot_x -1;i++){ //j fixed.
-	hf[i][j]=rhsx[i-1];     //rhsx index shifted by -1
+      delete [] rhsx;
+    
+      // for(i=0;i< tot_x;i++){//is this BC loop necessary? not really (check linear system)
+      //   hf[i][0]=0.;
+      //   hf[i][tot_y -1]=1.;
+      // }
+# pragma omp for
+      for(i=1;i< tot_x -1;i++){
+	for(j=1;j< tot_y -1;j++){ //i fixed. solve system in y direction
+	  rhsy[j-1]=-ax*hf[i+1][j]+2.*(1./dt + ax)*hf[i][j] -ax*hf[i-1][j]; //rhsx index shifted by -1
+	}
+	rhsy[tot_y -3]=rhsy[tot_y -3]-ay;//size of rhsy is tot_y -2!!
+	thomas(tot_y -2,ay,by,cy,rhsy);
+	for(j=1;j< tot_y -1;j++){ //i fixed.
+	  h[i][j]=rhsy[j-1];     //rhsx index shifted by -1
+	}
+	h[i][0]=0.;
+	h[i][tot_y -1]=1.;
       }
-      hf[0][j]=0.;
-      hf[tot_x -1][j]=1.;
-    }
-    // for(i=0;i< tot_x;i++){//is this BC loop necessary? not really (check linear system)
-    //   hf[i][0]=0.;
-    //   hf[i][tot_y -1]=1.;
-    // }
-#pragma omp parallel for default(shared) private(rhsy) num_threads(4)
-    for(i=1;i< tot_x -1;i++){
-      for(j=1;j< tot_y -1;j++){ //i fixed. solve system in y direction
-	rhsy[j-1]=-ax*hf[i+1][j]+2.*(1./dt + ax)*hf[i][j] -ax*hf[i-1][j]; //rhsx index shifted by -1
-      }
-      rhsy[tot_y -3]=rhsy[tot_y -3]-ay;//size of rhsy is tot_y -2!!
-      thomas(tot_y -2,ay,by,cy,rhsy);
-      for(j=1;j< tot_y -1;j++){ //i fixed.
-	h[i][j]=rhsy[j-1];     //rhsx index shifted by -1
-      }
-      h[i][0]=0.;
-      h[i][tot_y -1]=1.;
+      delete [] rhsy; 
     }
     for(j=0;j< tot_y;j++){
       h[0][j]=0.;
@@ -108,11 +115,10 @@ int main(){
       //it is true. so hf is indeed h at t+1/2dt ?
     }
   }
+
   storeOutput(h,t,tot_x,tot_y);
   annihilate(h,tot_x);
   annihilate(hf,tot_x);
-  delete [] rhsx;
-  delete [] rhsy;
   return 0;
 }
 
