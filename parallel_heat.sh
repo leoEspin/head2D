@@ -3,7 +3,7 @@
 #  Compile the program with g++
 #
 echo "g++ compiler should be installed for this script to work"
-g++ -fopenmp heat_equation.cpp -lm -o heat_p
+g++ -fopenmp heat_equation_omp.cpp -lm -o heat_p
 file="input"
 if [ ! -f $file ]; then
     python gimmick.py

@@ -50,6 +50,7 @@ int main(){
   double** h;
   double** hf;
 
+  start=omp_get_wtime ();
   getInput(nx,ny,dt,c,tfinal);
   dx=1./nx;
   dy=1./ny;
@@ -116,6 +117,9 @@ int main(){
       //it is true. so hf is indeed h at t+1/2dt ?
     }
   }
+  stop=omp_get_wtime ();
+  total=stop -start;
+  cout << "  Elapsed time = " << total/60.  << " minutes" << endl;
   storeOutput(h,t,tot_x,tot_y);
   annihilate(h,tot_x);
   annihilate(hf,tot_x);
