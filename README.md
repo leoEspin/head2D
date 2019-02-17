@@ -5,3 +5,4 @@ The script will ask you to generate an input file (click ok for the defaults) an
 
 Execute **parallel_heat.sh** to test execution speed ups with multithreading. 
 
+![alt text](Heated tile.png "A tile heated from two sides")
